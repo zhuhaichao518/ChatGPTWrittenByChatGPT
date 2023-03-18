@@ -39,6 +39,9 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _textController = TextEditingController();
   final List<String> _messages = [];
+  final List<Map<String, String>> _conversation = [
+  ];
+  bool _isButtonDisabled = false;
 
 Widget _buildMessageList() {
   return ListView.builder(
@@ -96,6 +99,11 @@ Widget _buildMessageList() {
 }
 
   Future<void> sendMessage(String message) async {
+    setState(() {
+      _isButtonDisabled = true;
+      _conversation.add({'role': 'user', 'content': message});
+      _messages.add('$message');
+    });
     String apiKey = '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';
     //String apiKey = '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';
     String apiUrl = 'https://api.openai.com/v1/chat/completions';
@@ -107,9 +115,7 @@ Widget _buildMessageList() {
 
     Map<String, dynamic> body = {
       'model': 'gpt-3.5-turbo',
-      'messages': [
-        {'role': 'user', 'content': message}
-      ],
+      'messages': _conversation,
     };
 
     try {
@@ -125,8 +131,9 @@ Widget _buildMessageList() {
         final String reply = responseData['choices'][0]['message']['content'].trim();
 
         setState(() {
-          _messages.add('$message');
+          _conversation.add({'role': 'assistant', 'content': reply});
           _messages.add('$reply');
+          _isButtonDisabled = false;
         });
       } else {
         throw Exception('Failed to get response from the ChatGPT API.');
@@ -165,7 +172,8 @@ Widget build(BuildContext context) {
               ),
               SizedBox(width: 8.0),
               ElevatedButton(
-                onPressed: () {
+                onPressed: _isButtonDisabled ? null:()
+                {
                   final String message = _textController.text.trim();
                   if (message.isNotEmpty) {
                     sendMessage(message);
@@ -174,7 +182,7 @@ Widget build(BuildContext context) {
                 },
                 child: const Text('Send'),
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.blue.shade900,
+                  primary: _isButtonDisabled ? Colors.grey : Colors.blue.shade900,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
                   ),
