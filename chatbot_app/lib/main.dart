@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/io_client.dart' as http_io;
+import 'dart:math' as math;
 
 void main() {
   runApp(const ChatbotApp());
@@ -44,82 +45,55 @@ Widget _buildMessageList() {
     itemCount: _messages.length,
     itemBuilder: (context, index) {
       bool isUserMessage = index % 2 == 0;
-      return Row(
-        mainAxisAlignment: isUserMessage
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
+      return Column(
         children: [
-          if (!isUserMessage) ...[
-            CircleAvatar(
-              backgroundImage: AssetImage('assets/images/chatbot_avatar.png'),
-            ),
-            SizedBox(width: 8.0),
-          ],
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.6,
-            ),
-            margin: EdgeInsets.fromLTRB(
-              isUserMessage ? 64.0 : 16.0,
-              4.0,
-              isUserMessage ? 16.0 : 64.0,
-              4.0,
-            ),
-            padding: const EdgeInsets.all(12.0),
-            decoration: BoxDecoration(
-              color: isUserMessage
-                  ? Colors.grey.shade300
-                  : Colors.blue.shade100,
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            child: Text(
-              _messages[index],
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
+              Row(
+                mainAxisAlignment: isUserMessage
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
+                children: [
+                  if (!isUserMessage) ...[
+                    CircleAvatar(
+                      backgroundImage: AssetImage('assets/images/chatbot_avatar.png'),
+                    ),
+                    SizedBox(width: 8.0),
+                  ],
+                  CustomPaint(
+                    painter: BubblePainter(isUser: isUserMessage),
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.6,
+                      ),
+                      margin: EdgeInsets.fromLTRB(
+                        isUserMessage ? 16.0 : 16.0,
+                        4.0,
+                        isUserMessage ? 16.0 : 16.0,
+                        4.0,
+                      ),
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        _messages[index],
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (isUserMessage) ...[
+                    SizedBox(width: 8.0),
+                    CircleAvatar(
+                      backgroundImage: AssetImage('assets/images/user_avatar.png'),
+                    ),
+                  ],
+                ],
               ),
-            ),
-          ),
-          if (isUserMessage) ...[
-            SizedBox(width: 8.0),
-            CircleAvatar(
-              backgroundImage: AssetImage('assets/images/user_avatar.png'),
-            ),
-          ],
+              SizedBox(height: 8.0),
         ],
       );
     },
   );
 }
-/*
-Widget _buildMessageList() {
-  return ListView.builder(
-    itemCount: _messages.length,
-    itemBuilder: (context, index) {
-      bool isUserMessage = index % 2 == 0;
-      return Container(
-        margin: EdgeInsets.fromLTRB(
-          isUserMessage ? 64.0 : 16.0, // Add left margin for chatbot messages
-          4.0, // Reduced top margin
-          isUserMessage ? 16.0 : 64.0, // Add right margin for user messages
-          4.0, // Reduced bottom margin
-        ),
-        padding: const EdgeInsets.all(12.0),
-        decoration: BoxDecoration(
-          color: isUserMessage ? Colors.grey.shade300 : Colors.blue.shade100,
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-        child: Text(
-          _messages[index],
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      );
-    },
-  );
-}*/
 
   Future<void> sendMessage(String message) async {
     String apiKey = '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';
@@ -204,6 +178,7 @@ Widget _buildMessageList() {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
+                    minimumSize: Size(88, 58),
                   ),
                 ),
               ],
@@ -215,3 +190,127 @@ Widget _buildMessageList() {
     );
   }
 }
+
+class BubblePainter extends CustomPainter {
+  final bool isUser;
+
+  BubblePainter({required this.isUser});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = isUser ? Colors.grey.shade300 : Colors.blue.shade100
+      ..style = PaintingStyle.fill;
+
+    final borderRadius = 12.0;
+    final arrowHeight = 7.0;
+    final arrowWidth = 8.0;
+    final arrowOffset = 16.0;
+    final mid = size.height / 2;
+    final path = Path();
+
+    path.moveTo(borderRadius, 0);
+    path.lineTo(size.width - borderRadius, 0);
+    path.arcToPoint(Offset(size.width, borderRadius),
+        radius: Radius.circular(borderRadius));
+
+    if (isUser) {
+      path.lineTo(size.width, mid - arrowHeight);
+      path.lineTo(size.width + arrowWidth, mid);
+      path.lineTo(size.width, mid + arrowHeight);
+      path.lineTo(size.width, size.height - borderRadius);
+      path.arcToPoint(Offset(size.width - borderRadius, size.height),
+          radius: Radius.circular(borderRadius));
+    } else {
+      path.lineTo(size.width, size.height - borderRadius);
+      path.arcToPoint(Offset(size.width - borderRadius, size.height),
+          radius: Radius.circular(borderRadius));
+    }
+
+    path.lineTo(borderRadius, size.height);
+    path.arcToPoint(Offset(0, size.height - borderRadius),
+        radius: Radius.circular(borderRadius));
+    
+    if (!isUser) {
+      path.lineTo(0, mid + arrowHeight);
+      path.lineTo(0 - arrowWidth, mid);
+      path.lineTo(0, mid - arrowHeight);
+      path.lineTo(0, borderRadius);
+      path.arcToPoint(Offset(borderRadius, 0),
+          radius: Radius.circular(borderRadius));
+    } else {
+      path.lineTo(0, borderRadius);
+      path.arcToPoint(Offset(borderRadius, 0),
+          radius: Radius.circular(borderRadius));
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
+  }
+}
+/*
+class BubblePainter extends CustomPainter {
+  final bool isUser;
+
+  BubblePainter({required this.isUser});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = isUser ? Colors.grey.shade300 : Colors.blue.shade100
+      ..style = PaintingStyle.fill;
+
+    final borderRadius = 12.0;
+    final arrowHeight = 8.0;
+    final arrowWidth = 6.0;
+    final arrowOffset = 24.0;
+    final path = Path();
+
+    path.moveTo(borderRadius, 0);
+    path.lineTo(size.width - borderRadius, 0);
+    path.arcToPoint(Offset(size.width, borderRadius),
+        radius: Radius.circular(borderRadius));
+
+    if (isUser) {
+      path.lineTo(size.width, size.height - borderRadius - arrowHeight);
+      path.arcToPoint(Offset(size.width - borderRadius, size.height),
+          radius: Radius.circular(borderRadius));
+      path.lineTo(arrowOffset + arrowWidth, size.height);
+      path.lineTo(arrowOffset, size.height - arrowHeight);
+    } else {
+      path.lineTo(size.width, size.height - borderRadius);
+      path.arcToPoint(Offset(size.width - borderRadius, size.height),
+          radius: Radius.circular(borderRadius));
+    }
+
+    path.lineTo(borderRadius, size.height);
+    path.arcToPoint(Offset(0, size.height - borderRadius),
+        radius: Radius.circular(borderRadius));
+
+    if (!isUser) {
+      path.lineTo(0, arrowOffset + arrowHeight);
+      path.lineTo(-arrowWidth, arrowOffset);
+      path.lineTo(0, arrowOffset);
+      path.lineTo(0, borderRadius);
+      path.arcToPoint(Offset(borderRadius, 0),
+          radius: Radius.circular(borderRadius));
+    } else {
+      path.lineTo(arrowOffset, 0);
+      path.lineTo(arrowOffset + arrowWidth, arrowHeight);
+      path.lineTo(borderRadius, 0);
+      path.arcToPoint(Offset(borderRadius, 0),
+          radius: Radius.circular(borderRadius));
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
+  }
+}*/
