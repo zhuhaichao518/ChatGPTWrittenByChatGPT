@@ -136,59 +136,59 @@ Widget _buildMessageList() {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('ChatGPT Chatbot'),
-        backgroundColor: Colors.blue.shade900,
-      ),
-      body: Column(
-        children: [
-          Expanded(child: _buildMessageList()),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _textController,
-                    decoration: InputDecoration(
-                      hintText: 'Type your message',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8.0),
-                ElevatedButton(
-                  onPressed: () {
-                    final String message = _textController.text.trim();
-                    if (message.isNotEmpty) {
-                      sendMessage(message);
-                      _textController.clear();
-                    }
-                  },
-                  child: const Text('Send'),
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.blue.shade900,
-                    shape: RoundedRectangleBorder(
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('ChatGPT Chatbot'),
+      backgroundColor: Colors.blue.shade900,
+    ),
+    body: Column(
+      children: [
+        Expanded(child: _buildMessageList()),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            children: [
+              Flexible( // 新增的 Flexible 部件
+                child: TextField(
+                  controller: _textController,
+                  decoration: InputDecoration(
+                    hintText: 'Type your message',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
-                    minimumSize: Size(88, 58),
                   ),
                 ),
-              ],
-            ),
+              ),
+              SizedBox(width: 8.0),
+              ElevatedButton(
+                onPressed: () {
+                  final String message = _textController.text.trim();
+                  if (message.isNotEmpty) {
+                    sendMessage(message);
+                    _textController.clear();
+                  }
+                },
+                child: const Text('Send'),
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.blue.shade900,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  minimumSize: Size(88, 58),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 10.0),
-        ],
-      ),
-    );
-  }
+        ),
+        SizedBox(height: 10.0),
+      ],
+    ),
+  );
+}
 }
 
 class BubblePainter extends CustomPainter {
@@ -252,65 +252,3 @@ class BubblePainter extends CustomPainter {
     return true;
   }
 }
-/*
-class BubblePainter extends CustomPainter {
-  final bool isUser;
-
-  BubblePainter({required this.isUser});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = isUser ? Colors.grey.shade300 : Colors.blue.shade100
-      ..style = PaintingStyle.fill;
-
-    final borderRadius = 12.0;
-    final arrowHeight = 8.0;
-    final arrowWidth = 6.0;
-    final arrowOffset = 24.0;
-    final path = Path();
-
-    path.moveTo(borderRadius, 0);
-    path.lineTo(size.width - borderRadius, 0);
-    path.arcToPoint(Offset(size.width, borderRadius),
-        radius: Radius.circular(borderRadius));
-
-    if (isUser) {
-      path.lineTo(size.width, size.height - borderRadius - arrowHeight);
-      path.arcToPoint(Offset(size.width - borderRadius, size.height),
-          radius: Radius.circular(borderRadius));
-      path.lineTo(arrowOffset + arrowWidth, size.height);
-      path.lineTo(arrowOffset, size.height - arrowHeight);
-    } else {
-      path.lineTo(size.width, size.height - borderRadius);
-      path.arcToPoint(Offset(size.width - borderRadius, size.height),
-          radius: Radius.circular(borderRadius));
-    }
-
-    path.lineTo(borderRadius, size.height);
-    path.arcToPoint(Offset(0, size.height - borderRadius),
-        radius: Radius.circular(borderRadius));
-
-    if (!isUser) {
-      path.lineTo(0, arrowOffset + arrowHeight);
-      path.lineTo(-arrowWidth, arrowOffset);
-      path.lineTo(0, arrowOffset);
-      path.lineTo(0, borderRadius);
-      path.arcToPoint(Offset(borderRadius, 0),
-          radius: Radius.circular(borderRadius));
-    } else {
-      path.lineTo(arrowOffset, 0);
-      path.lineTo(arrowOffset + arrowWidth, arrowHeight);
-      path.lineTo(borderRadius, 0);
-      path.arcToPoint(Offset(borderRadius, 0),
-          radius: Radius.circular(borderRadius));
-    }
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
-  }
-}*/
