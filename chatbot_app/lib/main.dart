@@ -104,8 +104,7 @@ Widget _buildMessageList() {
       _conversation.add({'role': 'user', 'content': message});
       _messages.add('$message');
     });
-    String apiKey = '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';
-    //String apiKey = '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';
+    String apiKey = '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';
     String apiUrl = 'https://api.openai.com/v1/chat/completions';
 
     Map<String, String> headers = {
@@ -114,8 +113,9 @@ Widget _buildMessageList() {
     };
 
     Map<String, dynamic> body = {
-      'model': 'gpt-3.5-turbo',
+      'model': 'gpt-4',//'gpt-3.5-turbo',
       'messages': _conversation,
+      "temperature": 0.7,
     };
 
     try {
@@ -136,10 +136,13 @@ Widget _buildMessageList() {
           _isButtonDisabled = false;
         });
       } else {
-        throw Exception('Failed to get response from the ChatGPT API.');
+        throw Exception(response.reasonPhrase);
       }
     } catch (error) {
-      print('Error: $error');
+      setState(() {
+        _messages.add('$error');
+        _isButtonDisabled = false;
+      });
     }
   }
 
