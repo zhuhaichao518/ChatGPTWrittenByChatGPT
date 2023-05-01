@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/io_client.dart' as http_io;
+import 'settings_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const ChatbotApp());
@@ -113,10 +115,14 @@ class _ChatScreenState extends State<ChatScreen> {
       'Authorization': 'Bearer $apiKey',
     };
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool useGpt4 = prefs.getBool('useGpt4') ?? true;
+    bool keepmemory = prefs.getBool('keepMemory') ?? true;
+
     Map<String, dynamic> body = {
-      'model': 'gpt-4', //'gpt-3.5-turbo',
-      'messages': _conversation,
-      'temperature': 0.7,
+      'model': useGpt4 ? 'gpt-4' : 'gpt-3.5-turbo',
+      'messages': keepmemory? _conversation : [{'role': 'user', 'content': message}],
+      'temperature': 0.1,
       'stream': true,
     };
 
@@ -131,16 +137,16 @@ class _ChatScreenState extends State<ChatScreen> {
           .asBroadcastStream()
           .transform(utf8.decoder)
           .transform(const LineSplitter());
-      
+
       _messages.add('');
-      int myid = _messages.length -1;
+      int myid = _messages.length - 1;
       await for (String line in linesStream) {
-        if (line != '' && line!= 'data: [DONE]') {
+        if (line != '' && line != 'data: [DONE]') {
           String jsonData = line.substring(6);
           Map<String, dynamic> decodedJson = jsonDecode(jsonData);
           if (decodedJson['choices'][0]['delta'].containsKey('content')) {
             String deltaContent = decodedJson['choices'][0]['delta']['content'];
-            print('Delta content: $deltaContent');
+            //print('Delta content: $deltaContent');
             setState(() {
               _messages[myid] = _messages[myid] + deltaContent;
               _isButtonDisabled = false;
@@ -149,8 +155,8 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       }
       setState(() {
-          _conversation.add({'role': 'assistant', 'content': _messages.last});
-          _isButtonDisabled = false;
+        _conversation.add({'role': 'assistant', 'content': _messages.last});
+        _isButtonDisabled = false;
       });
     } catch (error) {
       setState(() {
@@ -166,6 +172,17 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: const Text('ChatGPT Chatbot'),
         backgroundColor: Colors.blue.shade900,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
