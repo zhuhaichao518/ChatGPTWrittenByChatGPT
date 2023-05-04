@@ -27,7 +27,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _saveSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('useGpt4', _useGpt4);
-    prefs.setBool('keepMemory',_keepMemory);
+    prefs.setBool('keepMemory', _keepMemory);
   }
 
   @override

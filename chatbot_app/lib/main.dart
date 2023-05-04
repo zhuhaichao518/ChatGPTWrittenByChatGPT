@@ -107,7 +107,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _conversation.add({'role': 'user', 'content': message});
       _messages.add('$message');
     });
-    String apiKey = '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';
+    String apiKey = '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';
     String apiUrl = 'https://api.openai.com/v1/chat/completions';
 
     Map<String, String> headers = {
@@ -121,7 +121,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
     Map<String, dynamic> body = {
       'model': useGpt4 ? 'gpt-4' : 'gpt-3.5-turbo',
-      'messages': keepmemory? _conversation : [{'role': 'user', 'content': message}],
+      'messages': keepmemory
+          ? _conversation
+          : [
+              {'role': 'user', 'content': message}
+            ],
       'temperature': 0.1,
       'stream': true,
     };
@@ -192,8 +196,10 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Row(
               children: [
                 Flexible(
-                  // 新增的 Flexible 部件
                   child: TextField(
+                    minLines: 1,
+                    maxLines: 5,
+                    textAlignVertical: TextAlignVertical.center,
                     controller: _textController,
                     decoration: InputDecoration(
                       hintText: 'Type your message',
