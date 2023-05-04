@@ -23,11 +23,16 @@ class ChatbotApp extends StatelessWidget {
   }
 }
 
-http.Client createHttpClient() {
+Future<http.Client> createHttpClient() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool useProxy = prefs.getBool('useProxy') ?? false;
+  String portNumber = prefs.getString('portNumber') ?? '4780';
   var httpClient = HttpClient();
-  httpClient.findProxy = (uri) {
-    return 'PROXY 127.0.0.1:4780';
-  };
+  if (useProxy) {
+    httpClient.findProxy = (uri) {
+      return 'PROXY 127.0.0.1:$portNumber';
+    };
+  }
   return http_io.IOClient(httpClient);
 }
 
@@ -107,7 +112,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _conversation.add({'role': 'user', 'content': message});
       _messages.add('$message');
     });
-    String apiKey = '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';
+    String apiKey = '';
     String apiUrl = 'https://api.openai.com/v1/chat/completions';
 
     Map<String, String> headers = {
@@ -126,12 +131,12 @@ class _ChatScreenState extends State<ChatScreen> {
           : [
               {'role': 'user', 'content': message}
             ],
-      'temperature': 0.1,
+      'temperature': double.parse(prefs.getString('temperature') ?? '0.1'),
       'stream': true,
     };
 
     try {
-      http.Client httpClient = createHttpClient();
+      http.Client httpClient = await createHttpClient();
       final request = http.Request('POST', Uri.parse(apiUrl));
       request.headers.addAll(headers);
       request.body = json.encode(body);
