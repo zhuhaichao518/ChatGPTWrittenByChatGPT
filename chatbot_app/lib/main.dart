@@ -122,7 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool useGpt4 = prefs.getBool('useGpt4') ?? true;
-    bool keepmemory = prefs.getBool('keepMemory') ?? true;
+    bool keepmemory = prefs.getBool('keepMemory') ?? false;
 
     Map<String, dynamic> body = {
       'model': useGpt4 ? 'gpt-4' : 'gpt-3.5-turbo',
