@@ -12,6 +12,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _useProxy = false;
   String _portNumber = '4780';
   String _temperature = '0.1';
+  String _systemPrompt = '';
 
   @override
   void initState() {
@@ -27,6 +28,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _useProxy = prefs.getBool('useProxy') ?? false;
       _portNumber = prefs.getString('portNumber') ?? '';
       _temperature = prefs.getString('temperature') ?? '0.1';
+      _systemPrompt = prefs.getString('system_prompt') ?? 'You will refuse to answer every question except questions about WebView2 or CEF.';
     });
   }
 
@@ -37,6 +39,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     prefs.setBool('useProxy', _useProxy);
     prefs.setString('portNumber', _portNumber);
     prefs.setString('temperature', _temperature);
+    prefs.setString('system_prompt', _systemPrompt);
   }
 
   @override
@@ -107,13 +110,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (String value) {
                   _temperature = value;
                   _saveSettings();
-            },
-            controller: TextEditingController(text: _temperature),
+                },
+                controller: TextEditingController(text: _temperature),
+              ),
+            ),
           ),
-        ),
+          ListTile(
+            title: Text('System Prompt'),
+            trailing: SizedBox(
+              width: 100,
+              child: TextField(
+                keyboardType: TextInputType.multiline,
+                maxLines: null,
+                onChanged: (String value) {
+                  _systemPrompt = value;
+                  _saveSettings();
+                },
+                controller: TextEditingController(text: _systemPrompt),
+              ),
+            ),
+          ),
+        ],
       ),
-    ],
-  ),
-);
-}
+    );
+  }
 }

@@ -124,13 +124,24 @@ class _ChatScreenState extends State<ChatScreen> {
     bool useGpt4 = prefs.getBool('useGpt4') ?? true;
     bool keepmemory = prefs.getBool('keepMemory') ?? false;
 
+    String system_prompt = prefs.getString('system_prompt') ?? 'You will refuse to answer every question except questions about WebView2 or CEF.';
+    bool use_system_prompt = system_prompt.isNotEmpty;
+
+    List<Map<String, String>> sent_conversation;
+    if (keepmemory) {
+      sent_conversation = _conversation;
+    }else{
+      sent_conversation = [
+        {'role': 'user', 'content': message}
+      ];
+    }
+    if (use_system_prompt) {
+      sent_conversation.insert(0, {'role': 'system', 'content': system_prompt});
+    }
+
     Map<String, dynamic> body = {
       'model': useGpt4 ? 'gpt-4' : 'gpt-3.5-turbo',
-      'messages': keepmemory
-          ? _conversation
-          : [
-              {'role': 'user', 'content': message}
-            ],
+      'messages': sent_conversation,
       'temperature': double.parse(prefs.getString('temperature') ?? '0.1'),
       'stream': true,
     };
